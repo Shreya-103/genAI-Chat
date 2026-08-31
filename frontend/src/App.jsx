@@ -4,9 +4,13 @@ import ReactMarkdown from "react-markdown";
 const App = ()=>{
 const [prompt, setPrompt] = useState("");
 const [answer, setAnswer] = useState("");
+const [loading, setLoading] = useState(false);
+
 const askAI = async ()=>{
   try{
-    const response = await fetch("http://localhost:3000/api/ai", {
+    setLoading(true);
+    setAnswer("");
+    const response = await fetch("https://genai-chat-e5c2.onrender.com/", {
       method: "POST",
       headers:{
         "Content-Type": "application/json"
@@ -19,6 +23,8 @@ const askAI = async ()=>{
     setAnswer(data.answer);
   } catch(err){
     console.error(err);
+  } finally{
+    setLoading(false);
   }
 }
 
@@ -29,8 +35,11 @@ const askAI = async ()=>{
         setPrompt(e.target.value)}
        placeholder= "Ask something...." />
        <button onClick={askAI}>Ask AI</button>
-       <ReactMarkdown>{answer}</ReactMarkdown>
-    </div>
+       {loading && <p>Ai is thinking....</p>}
+       {!loading && answer && (
+                 <ReactMarkdown>{answer}</ReactMarkdown>
+       )}
+           </div>
   )
 }
 
