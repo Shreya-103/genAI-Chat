@@ -10,7 +10,7 @@ const askAI = async ()=>{
   try{
     setLoading(true);
     setAnswer("");
-    const response = await fetch("https://genai-chat-e5c2.onrender.com/", {
+    const response = await fetch("https://genai-chat-e5c2.onrender.com/api/ai", {
       method: "POST",
       headers:{
         "Content-Type": "application/json"
