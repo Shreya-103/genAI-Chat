@@ -19,15 +19,9 @@ const askAI = async ()=>{
         prompt: prompt,
       }),
     });
-    const reader = response.body.getReader(); 
-    const decoder = new TextDecoder(); 
-    let result = ""; while(true){ 
-      const {value, done} = await reader.read();
-       if(done) break;
-       const chunk = decoder.decode(value); 
-      result += chunk; 
-    setAnswer(result);
-  }} catch(err){
+    const data = await response.json();
+    setAnswer(data.answer);
+  } catch(err){
     console.error(err);
   } finally{
     setLoading(false);

@@ -18,10 +18,9 @@ app.post("/api/ai", async (req, res)=>{
             model: "gemini-3.6-flash",
             contents: prompt
         });
-        res.setHeader("Content-Type", "text/plain");
-         for await (const chunk of response) {
-             res.write(chunk.text); 
-         }   res.end();
+        res.json({
+            answer: response.text
+        });
     } catch(error){
         console.error(error);
         res.status(500).json({
