@@ -1,50 +1,4 @@
-// import { useState } from "react";
-// import ReactMarkdown from "react-markdown";
-
-// const App = ()=>{
-// const [prompt, setPrompt] = useState("");
-// const [answer, setAnswer] = useState("");
-// const [loading, setLoading] = useState(false);
-
-// const askAI = async ()=>{
-//   try{
-//     setLoading(true);
-//     setAnswer("");
-//     const response = await fetch("https://genai-chat-e5c2.onrender.com/api/ai", {
-//       method: "POST",
-//       headers:{
-//         "Content-Type": "application/json"
-//       },
-//       body: JSON.stringify({
-//         prompt: prompt,
-//       }),
-//     });
-//     const data = await response.json();
-//     setAnswer(data.answer);
-//   } catch(err){
-//     console.error(err);
-//   } finally{
-//     setLoading(false);
-//   }
-// }
-
-//   return(
-//     <div className="container">
-//       <h1>GenAI Chat</h1>
-//       <input type="text" value={prompt} onChange={(e)=>
-//         setPrompt(e.target.value)}
-//        placeholder= "Ask something...." />
-//        <button onClick={askAI}>Ask AI</button>
-//        {loading && <p>Ai is thinking....</p>}
-//        {!loading && answer && (
-//                  <ReactMarkdown>{answer}</ReactMarkdown>
-//        )}
-//            </div>
-//   )
-// }
-
-// export default App;
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import "./App.css";
 
@@ -53,10 +7,25 @@ const App = () => {
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [cards, setCards] = useState([]);
+  const [currentCard, setCurrentCard] = useState(0);
+
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("theme") !== "light";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
+
   const askAI = async () => {
+    if (!prompt.trim()) return;
+
     try {
       setLoading(true);
       setAnswer("");
+
+      const question = prompt;
 
       const response = await fetch(
         "https://genai-chat-e5c2.onrender.com/api/ai",
@@ -66,13 +35,23 @@ const App = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            prompt: prompt,
+            prompt: question,
           }),
         }
       );
 
       const data = await response.json();
+
+      const newCard = {
+        prompt: question,
+        answer: data.answer,
+        date: new Date().toLocaleDateString("en-GB"),
+      };
+
+      setCards((prevCards) => [...prevCards, newCard]);
+      setCurrentCard(cards.length);
       setAnswer(data.answer);
+      setPrompt("");
     } catch (err) {
       console.error(err);
     } finally {
@@ -80,90 +59,229 @@ const App = () => {
     }
   };
 
+  const nextCard = () => {
+    if (currentCard < cards.length - 1) {
+      setCurrentCard(currentCard + 1);
+    }
+  };
+
+  const previousCard = () => {
+    if (currentCard > 0) {
+      setCurrentCard(currentCard - 1);
+    }
+  };
+
+  const activeCard = cards[currentCard];
+
   return (
-    <div className="app">
+    <div className={`app ${darkMode ? "dark" : "light"}`}>
+
       <header className="header">
-        <div className="logo"> <span>✦</span> GenAI</div>
-        <p>KNOWLEDGE DECK</p>
+        <div className="brand">
+          <h1>INDEX</h1>
+          <span>01</span>
+        </div>
+
+        <div className="header-right">
+          <div className="header-date">
+            {new Date().toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })}
+          </div>
+
+          <button
+            className="theme-toggle"
+            onClick={() => setDarkMode(!darkMode)}
+            aria-label="Toggle theme"
+          >
+            {darkMode ? "LIGHT" : "DARK"}
+          </button>
+        </div>
       </header>
 
       <main className="main">
-        <section className="intro">
-          <p className="eyebrow">YOUR AI DECK</p>
-          <h1>Ask. <br /><em>Discover.</em></h1>
-          <p className="intro-text">Turn your questions into cards of knowledge.</p>
-        </section>
+
+        <div className="deck-heading">
+          <div>
+            <span className="section-label">
+              QUESTION ARCHIVE
+            </span>
+
+            <p className="deck-count">
+              {cards.length === 0
+                ? "NO ENTRIES"
+                : `${cards.length} ${
+                    cards.length === 1 ? "ENTRY" : "ENTRIES"
+                  }`}
+            </p>
+          </div>
+
+          <span className="archive-mark">Q / A</span>
+        </div>
 
         <section className="deck-area">
+
           <div className="card-stack">
+
             <div className="card back-card back-card-one"></div>
             <div className="card back-card back-card-two"></div>
+
             <div className="card main-card">
+
               <div className="card-header">
-                <span>GENAI</span>
-                <span>001</span>
+                <span>
+                  {activeCard
+                    ? `ENTRY ${String(currentCard + 1).padStart(3, "0")}`
+                    : "NEW ENTRY"}
+                </span>
+
+                <span>
+                  {activeCard ? activeCard.date : "—"}
+                </span>
               </div>
 
               <div className="card-content">
-                {!answer && !loading && (
-                  <>
-                    <span className="card-symbol"> ✦</span>
-                    <h2>What would <br />you like to know? </h2>
-                    <p>Ask anything and create your first knowledge car </p>
-                  </>
+
+                {!activeCard && !loading && (
+                  <div className="empty-card">
+                    <span className="empty-number">001</span>
+
+                    <h2>
+                      Start with
+                      <br />
+                      a question.
+                    </h2>
+
+                    <p>
+                      Your answers will collect here,
+                      one entry at a time.
+                    </p>
+                  </div>
                 )}
 
                 {loading && (
-                  <>
-                    <span className="card-symbol loading-symbol"> ✦ </span>
-                    <h2>Thinking... </h2>
-                    <p> Your answer is being prepared.</p>
-                  </>
-                )}
-
-                {!loading && answer && (
-                  <>
-                    <span className="question-label">
-                      YOUR QUESTION
+                  <div className="empty-card">
+                    <span className="empty-number loading-symbol">
+                      ...
                     </span>
 
-                    <h2 className="question"> {prompt} </h2>
-                    <div className="answer">
-                      <ReactMarkdown>{answer}</ReactMarkdown>
-                    </div>
-                  </>
+                    <h2>Looking into it.</h2>
+
+                    <p>
+                      Your new entry is being prepared.
+                    </p>
+                  </div>
                 )}
+
+                {!loading && activeCard && (
+                  <div className="entry">
+
+                    <span className="entry-label">
+                      QUESTION
+                    </span>
+
+                    <h2 className="question">
+                      {activeCard.prompt}
+                    </h2>
+
+                    <div className="answer">
+                      <ReactMarkdown>
+                        {activeCard.answer}
+                      </ReactMarkdown>
+                    </div>
+
+                  </div>
+                )}
+
               </div>
 
               <div className="card-footer">
-                <span>KNOWLEDGE DECK</span>
-                <span>01</span>
+                <span>
+                  {activeCard
+                    ? "INDEX / Q&A"
+                    : "INDEX / EMPTY"}
+                </span>
+
+                <span>
+                  {activeCard
+                    ? String(currentCard + 1).padStart(3, "0")
+                    : "001"}
+                </span>
               </div>
+
             </div>
           </div>
+
         </section>
 
+        <div className="navigation">
+
+          <button
+            onClick={previousCard}
+            disabled={currentCard === 0 || cards.length === 0}
+          >
+            ←
+          </button>
+
+          <div className="card-indicator">
+            <span className="current-number">
+              {cards.length === 0
+                ? "00"
+                : String(currentCard + 1).padStart(2, "0")}
+            </span>
+
+            <span className="indicator-line"></span>
+
+            <span>
+              {String(cards.length).padStart(2, "0")}
+            </span>
+          </div>
+
+          <button
+            onClick={nextCard}
+            disabled={
+              cards.length === 0 ||
+              currentCard === cards.length - 1
+            }
+          >
+            →
+          </button>
+
+        </div>
+
         <section className="input-area">
-          <input type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Ask something..."
+
+          <span className="input-number">+</span>
+
+          <input
+            type="text"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="Write a question..."
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 askAI();
               }
-            }} />
-          <button onClick={askAI}><span>ASK</span><span>→</span></button>
+            }}
+          />
+
+          <button
+            onClick={askAI}
+            disabled={loading || !prompt.trim()}
+          >
+            {loading ? "..." : "ADD"}
+          </button>
+
         </section>
 
-        <div className="navigation">
-          <button> ← </button>
-          <span> 01 / 01 </span>
-          <button>→</button>
-        </div>
       </main>
 
       <footer>
-        <span>Used GEMINI api for the project</span>
-        {/* <span> AI · KNOWLEDGE · CURIOSITY </span> */}
+        <span>INDEX</span>
+        <span>QUESTIONS / ANSWERS</span>
+        <span>{cards.length} ENTRIES</span>
       </footer>
 
     </div>
