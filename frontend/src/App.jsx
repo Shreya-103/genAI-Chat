@@ -77,11 +77,6 @@ const App = () => {
     <div className={`app ${darkMode ? "dark" : "light"}`}>
 
       <header className="header">
-        <div className="brand">
-          <h1>INDEX</h1>
-          <span>01</span>
-        </div>
-
         <div className="header-right">
           <div className="header-date">
             {new Date().toLocaleDateString("en-GB", {
