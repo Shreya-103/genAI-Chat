@@ -119,12 +119,9 @@ const App = () => {
             <span className="section-label">QUESTION ARCHIVE</span>
 
             <p className="deck-count">
-              {cards.length === 0 ? "NO ENTRIES" : `${cards.length} ${
-                    cards.length === 1 ? "ENTRY" : "ENTRIES"
-                  }`}
+              {cards.length === 0 ? "NO ENTRIES" : `${cards.length} ${cards.length === 1 ? "ENTRY" : "ENTRIES"  }`}
             </p>
           </div>
-
           <span className="archive-mark">Q / A</span>
         </div>
 
@@ -136,11 +133,8 @@ const App = () => {
             <div className="card main-card">
               <div className="card-header">
                 <span>
-                  {activeCard
-                    ? `ENTRY ${String(currentCard + 1).padStart(3, "0")}`
-                    : "NEW ENTRY"}
+                  {activeCard ? `ENTRY ${String(currentCard + 1).padStart(3, "0")}` : "NEW ENTRY"}
                 </span>
-
                 <span>{activeCard ? activeCard.date : "—"}</span>
               </div>
 
@@ -148,17 +142,8 @@ const App = () => {
                 {!activeCard && !loading && (
                   <div className="empty-card">
                     <span className="empty-number">001</span>
-
-                    <h2>
-                      Start with
-                      <br />
-                      a question.
-                    </h2>
-
-                    <p>
-                      Your answers will collect here,
-                      one entry at a time.
-                    </p>
+                    <h2> Start with <br /> a question. </h2>
+                    <p> Your answers will collect here,  one entry at a time. </p>
                   </div>
                 )}
 
@@ -177,31 +162,17 @@ const App = () => {
                 {!loading && activeCard && (
                   <div className="entry">
                     <span className="entry-label">QUESTION</span>
-
-                    <h2 className="question">
-                      {activeCard.prompt}
-                    </h2>
-
-                    <div className="answer">
-                      <ReactMarkdown>
-                        {activeCard.answer}
-                      </ReactMarkdown>
-                    </div>
+                    <h2 className="question">  {activeCard.prompt}</h2>
+                    <div className="answer">  <ReactMarkdown> {activeCard.answer}  </ReactMarkdown>  </div>
                   </div>
                 )}
               </div>
 
               <div className="card-footer">
-                <span>
-                  {activeCard
-                    ? "INDEX / Q&A"
-                    : "INDEX / EMPTY"}
-                </span>
+                <span> {activeCard ? "INDEX / Q&A"  : "INDEX / EMPTY"} </span>
 
                 <span>
-                  {activeCard
-                    ? String(currentCard + 1).padStart(3, "0")
-                    : "001"}
+                  {activeCard ? String(currentCard + 1).padStart(3, "0")  : "001"}
                 </span>
               </div>
             </div>
@@ -209,18 +180,11 @@ const App = () => {
         </section>
 
         <div className="navigation">
-          <button
-            onClick={previousCard}
-            disabled={currentCard === 0 || cards.length === 0}
-          >
-            ←
-          </button>
+          <button onClick={previousCard}  disabled={currentCard === 0 || cards.length === 0}> ←</button>
 
           <div className="card-indicator">
             <span className="current-number">
-              {cards.length === 0
-                ? "00"
-                : String(currentCard + 1).padStart(2, "0")}
+              {cards.length === 0? "00" : String(currentCard + 1).padStart(2, "0")}
             </span>
 
             <span className="indicator-line"></span>
@@ -230,25 +194,13 @@ const App = () => {
             </span>
           </div>
 
-          <button
-            onClick={nextCard}
-            disabled={
-              cards.length === 0 ||
-              currentCard === cards.length - 1
-            }
-          >
-            →
-          </button>
+          <button onClick={nextCard} disabled={cards.length === 0 ||currentCard === cards.length - 1}> →</button>
         </div>
 
         <section className="input-area">
           <span className="input-number">+</span>
 
-          <input
-            type="text"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Write a question..."
+          <input type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Write a question..."
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 askAI();
@@ -256,10 +208,7 @@ const App = () => {
             }}
           />
 
-          <button
-            onClick={askAI}
-            disabled={loading || !prompt.trim()}
-          >
+          <button onClick={askAI} disabled={loading || !prompt.trim()}>
             {loading ? "..." : "ADD"}
           </button>
         </section>

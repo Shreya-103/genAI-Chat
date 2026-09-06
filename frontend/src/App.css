@@ -5,29 +5,41 @@
 }
 
 :root {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Kalam";
 }
 .app {
-  --bg: #F7B7C3;
-  --text: #2B2023;
-  --muted: #806F73;
-  --border: #E7C4C8;
-  --card: #FFF9F7;
-  --card-text: #2B2023;
-  --card-border: #E8D6D2;
-  --stack: #FFD0C0;
-  --accent: #D85C72;
-  --input: #FFF9F7;
-  --button: #D85C72;
+  --bg: #E8F0EE;
+  --text: #182B35;
+  --muted: #667A80;
+  --card: #FFFCF5;
+  --card-text: #182B35;
+  --card-border: #D3DEDC;
+  --border: #C5D4D1;
+  --stack: #8FB9B2;
+  --accent: #176B87;
+  --accent-secondary: #28B5A5;
+  --input: #FFFCF5;
+  --button: #176B87;
   --button-text: #FFFFFF;
-
-  background: linear-gradient(
-    135deg,
-    #F7B7C3 0%,
-    #FFD0B5 55%,
-    #FFE5C2 100%
+  background: linear-gradient(135deg, #E8F0EE 0%, #DCEBE8 50%, #D8E7F0 100%
   );
-
+  color: var(--text);
+}
+.app.dark {
+  --bg: #101B21;
+  --text: #EDF5F3;
+  --muted: #91A5A8;
+  --card: #18272E;
+  --card-text: #EDF5F3;
+  --card-border: #30434A;
+  --border: #2B4148;
+  --stack: #24545B;
+  --accent: #42B8C1;
+  --accent-secondary: #35C5A9;
+  --input: #18272E;
+  --button: #238A9A;
+  --button-text: #FFFFFF;
+  background: linear-gradient( 135deg,  #101B21 0%, #14262D 50%, #153936 100%);
   color: var(--text);
 }
 
@@ -58,6 +70,7 @@
 .card-indicator {
   font-size: 9px;
   letter-spacing: 1.5px;
+  /* font-family: "IBM Plex Mono", monospace */
 }
 
 .header-date,
@@ -169,9 +182,9 @@
   overflow: hidden;
 }
 
-.empty-card h2,
-.question {
-  font-family: Georgia, serif;
+.question,
+.empty-card h2 {
+  font-family: "Rouge Script", cursive;
   font-weight: 400;
 }
 
@@ -180,11 +193,6 @@
   margin-bottom: 20px;
   color: var(--accent);
   font-size: 12px;
-}
-
-.empty-card h2 {
-  font-size: 34px;
-  line-height: 1.1;
 }
 
 .empty-card p {
@@ -205,9 +213,15 @@
 }
 
 .question {
-  margin-bottom: 18px;
-  font-size: 28px;
-  line-height: 1.15;
+  font-size: 2.8rem;
+  line-height: 1.1;
+  font-weight: 400;
+}
+
+.empty-card h2 {
+  font-size: 3.4rem;
+  line-height: 1;
+  font-weight: 400;
 }
 
 .answer {
