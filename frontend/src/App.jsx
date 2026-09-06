@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import "./App.css";
 
@@ -18,6 +19,26 @@ const App = () => {
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
+  useEffect(() => {
+    const getCards = async () => {
+      try {
+        const response = await axios.get(
+          "https://genai-chat-e5c2.onrender.com/api/cards"
+        );
+
+        setCards(response.data);
+
+        if (response.data.length > 0) {
+          setCurrentCard(response.data.length - 1);
+        }
+      } catch (error) {
+        console.error("Failed to load cards", error);
+      }
+    };
+
+    getCards();
+  }, []);
+
   const askAI = async () => {
     if (!prompt.trim()) return;
 
@@ -27,33 +48,34 @@ const App = () => {
 
       const question = prompt;
 
-      const response = await fetch(
+      const response = await axios.post(
         "https://genai-chat-e5c2.onrender.com/api/ai",
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            prompt: question,
-          }),
+          prompt: question,
         }
       );
 
-      const data = await response.json();
-
       const newCard = {
         prompt: question,
-        answer: data.answer,
+        answer: response.data.answer,
         date: new Date().toLocaleDateString("en-GB"),
       };
 
-      setCards((prevCards) => [...prevCards, newCard]);
-      setCurrentCard(cards.length);
-      setAnswer(data.answer);
+      const savedCard = await axios.post(
+        "https://genai-chat-e5c2.onrender.com/api/cards",
+        newCard
+      );
+
+      setCards((prevCards) => {
+        const updatedCards = [...prevCards, savedCard.data];
+        setCurrentCard(updatedCards.length - 1);
+        return updatedCards;
+      });
+
+      setAnswer(response.data.answer);
       setPrompt("");
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -75,7 +97,6 @@ const App = () => {
 
   return (
     <div className={`app ${darkMode ? "dark" : "light"}`}>
-
       <header className="header">
         <div className="header-right">
           <div className="header-date">
@@ -86,28 +107,19 @@ const App = () => {
             })}
           </div>
 
-          <button
-            className="theme-toggle"
-            onClick={() => setDarkMode(!darkMode)}
-            aria-label="Toggle theme"
-          >
+          <button className="theme-toggle"  onClick={() => setDarkMode(!darkMode)} aria-label="Toggle theme" >
             {darkMode ? "LIGHT" : "DARK"}
           </button>
         </div>
       </header>
 
       <main className="main">
-
         <div className="deck-heading">
           <div>
-            <span className="section-label">
-              QUESTION ARCHIVE
-            </span>
+            <span className="section-label">QUESTION ARCHIVE</span>
 
             <p className="deck-count">
-              {cards.length === 0
-                ? "NO ENTRIES"
-                : `${cards.length} ${
+              {cards.length === 0 ? "NO ENTRIES" : `${cards.length} ${
                     cards.length === 1 ? "ENTRY" : "ENTRIES"
                   }`}
             </p>
@@ -117,14 +129,11 @@ const App = () => {
         </div>
 
         <section className="deck-area">
-
           <div className="card-stack">
-
             <div className="card back-card back-card-one"></div>
             <div className="card back-card back-card-two"></div>
 
             <div className="card main-card">
-
               <div className="card-header">
                 <span>
                   {activeCard
@@ -132,13 +141,10 @@ const App = () => {
                     : "NEW ENTRY"}
                 </span>
 
-                <span>
-                  {activeCard ? activeCard.date : "—"}
-                </span>
+                <span>{activeCard ? activeCard.date : "—"}</span>
               </div>
 
               <div className="card-content">
-
                 {!activeCard && !loading && (
                   <div className="empty-card">
                     <span className="empty-number">001</span>
@@ -164,18 +170,13 @@ const App = () => {
 
                     <h2>Looking into it.</h2>
 
-                    <p>
-                      Your new entry is being prepared.
-                    </p>
+                    <p>Your new entry is being prepared.</p>
                   </div>
                 )}
 
                 {!loading && activeCard && (
                   <div className="entry">
-
-                    <span className="entry-label">
-                      QUESTION
-                    </span>
+                    <span className="entry-label">QUESTION</span>
 
                     <h2 className="question">
                       {activeCard.prompt}
@@ -186,10 +187,8 @@ const App = () => {
                         {activeCard.answer}
                       </ReactMarkdown>
                     </div>
-
                   </div>
                 )}
-
               </div>
 
               <div className="card-footer">
@@ -205,14 +204,11 @@ const App = () => {
                     : "001"}
                 </span>
               </div>
-
             </div>
           </div>
-
         </section>
 
         <div className="navigation">
-
           <button
             onClick={previousCard}
             disabled={currentCard === 0 || cards.length === 0}
@@ -243,11 +239,9 @@ const App = () => {
           >
             →
           </button>
-
         </div>
 
         <section className="input-area">
-
           <span className="input-number">+</span>
 
           <input
@@ -268,9 +262,7 @@ const App = () => {
           >
             {loading ? "..." : "ADD"}
           </button>
-
         </section>
-
       </main>
 
       <footer>
@@ -278,7 +270,6 @@ const App = () => {
         <span>QUESTIONS / ANSWERS</span>
         <span>{cards.length} ENTRIES</span>
       </footer>
-
     </div>
   );
 };
