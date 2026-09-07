@@ -16,7 +16,7 @@ app.post("/api/ai", async (req, res)=>{
     try{
         const {prompt} = req.body;
         const response = await ai.models.generateContent({
-            model: "gemini-3",
+            model: "gemini-3.1-pro-preview",
             contents: prompt
         });
         res.json({
