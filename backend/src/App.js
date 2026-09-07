@@ -22,13 +22,15 @@ app.post("/api/ai", async (req, res)=>{
         res.json({
             answer: response.text
         });
-    } catch(error){
-        console.error(error);
-        res.status(500).json({
-            message: "Something went wrong"
-        });
-
     }
+    catch(error){
+    console.error("AI ERROR:", error);
+
+    res.status(500).json({
+        message: "Something went wrong",
+        error: error.message
+    });
+}
 });
 app.use("/api/cards", cardRoutes);
 module.exports = app;
