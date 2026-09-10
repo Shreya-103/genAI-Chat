@@ -54,6 +54,7 @@ const App = () => {
           prompt: question,
         }
       );
+      console.log("AI RESPONSE: ", response.data);
 
       const newCard = {
         prompt: question,
