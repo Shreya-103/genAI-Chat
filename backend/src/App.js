@@ -12,7 +12,7 @@ const ai = new GoogleGenAI({
     apiKey : process.env.GEMINI_API_KEY
 });
 
-app.post("/", async (req, res)=>{
+app.post("/api/ai", async (req, res)=>{
     try{
         const {prompt} = req.body;
         const response = await ai.models.generateContent({
