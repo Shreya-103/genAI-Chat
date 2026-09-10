@@ -36,7 +36,9 @@ const App = () => {
   }, [darkMode]);
 
   // save cards
-  useEffect(() => {localStorage.setItem("cards", JSON.stringify(cards)); }, [cards]);
+  useEffect(() => {
+    localStorage.setItem("cards", JSON.stringify(cards));
+  }, [cards]);
 
   const askAI = async () => {
     if (!prompt.trim()) return;
@@ -50,11 +52,10 @@ const App = () => {
 
       const response = await axios.post(
         "https://genai-chat-e5c2.onrender.com/api/ai",
-        {
-          prompt: question,
-        }
+        { prompt: question }
       );
-      console.log("AI RESPONSE: ", response.data);
+
+      console.log("AI RESPONSE:", response.data);
 
       const newCard = {
         prompt: question,
@@ -62,12 +63,10 @@ const App = () => {
         date: new Date().toLocaleDateString("en-GB"),
       };
 
-      setCards((prevCards) => {
-        const updatedCards = [...prevCards, newCard];
-        setCurrentCard(updatedCards.length - 1);
-        return updatedCards;
-      });
+      const newCardIndex = cards.length;
 
+      setCards((prevCards) => [...prevCards, newCard]);
+      setCurrentCard(newCardIndex);
       setAnswer(response.data.answer);
       setPrompt("");
     } catch (error) {
@@ -96,7 +95,6 @@ const App = () => {
     <div className={`app ${darkMode ? "dark" : "light"}`}>
       <header className="header">
         <div className="header-right">
-
           <div className="header-date">
             {new Date().toLocaleDateString("en-GB", {
               day: "2-digit",
@@ -116,47 +114,37 @@ const App = () => {
           <div>
             <span className="section-label">QUESTION ARCHIVE</span>
             <p className="deck-count">
-              {cards.length === 0? "NO ENTRIES": `${cards.length} ${
-                  cards.length === 1 ? "ENTRY" : "ENTRIES"
-                }`}
+              {cards.length === 0 ? "NO ENTRIES" : `${cards.length} ${cards.length === 1 ? "ENTRY" : "ENTRIES"}`}
             </p>
           </div>
+
           <span className="archive-mark">Q / A</span>
         </div>
 
         <section className="deck-area">
           <div className="card-stack">
-            {/* <div className="card back-card back-card-one"></div>
-            <div className="card back-card back-card-two"></div> */}
-
             <div className="card main-card">
               <div className="card-header">
-                <span>
-                  {activeCard ? `ENTRY ${String(currentCard + 1).padStart(3, "0")}` : "NEW ENTRY"}
-                </span>
+                <span>{activeCard ? `ENTRY ${String(currentCard + 1).padStart(3, "0")}` : "NEW ENTRY"}</span>
                 <span>{activeCard ? activeCard.date : "—"}</span>
               </div>
 
               <div className="card-content">
                 {error && !loading && (
-                  <AIErrorHandler
-                    error={error}
-                    onRetry={askAI}
-                    canRetry={prompt.trim().length > 0}
-                  />
+                  <AIErrorHandler error={error} onRetry={askAI} canRetry={prompt.trim().length > 0} />
                 )}
 
                 {!error && !activeCard && !loading && (
                   <div className="empty-card">
                     <span className="empty-number">001</span>
-                    <h2>  Start with <br /> a question. </h2>
-                    <p>   Your answers will collect here, one entry at a time. </p>
+                    <h2>Start with <br /> a question.</h2>
+                    <p>Your answers will collect here, one entry at a time.</p>
                   </div>
                 )}
 
                 {!error && loading && (
                   <div className="empty-card">
-                    <span className="empty-number loading-symbol"> ...</span>
+                    <span className="empty-number loading-symbol">...</span>
                     <h2>Looking into it.</h2>
                     <p>Your new entry is being prepared.</p>
                   </div>
@@ -165,50 +153,47 @@ const App = () => {
                 {!error && !loading && activeCard && (
                   <div className="entry">
                     <span className="entry-label">QUESTION</span>
-                    <h2 className="question"> {activeCard.prompt}</h2>
+                    <h2 className="question">{activeCard.prompt}</h2>
                     <div className="answer">
-                      <ReactMarkdown> {activeCard.answer} </ReactMarkdown>
+                      <ReactMarkdown>{activeCard.answer}</ReactMarkdown>
                     </div>
                   </div>
                 )}
-
               </div>
 
               <div className="card-footer">
-                <span> {activeCard ? "INDEX / Q&A" : "INDEX / EMPTY"} </span>
-                <span> {activeCard ? String(currentCard + 1).padStart(3, "0"): "001"} </span>
+                <span>{activeCard ? "INDEX / Q&A" : "INDEX / EMPTY"}</span>
+                <span>{activeCard ? String(currentCard + 1).padStart(3, "0") : "001"}</span>
               </div>
             </div>
           </div>
         </section>
 
         <div className="navigation">
-          <button onClick={previousCard} disabled={currentCard === 0 || cards.length === 0}> ←</button>
+          <button onClick={previousCard} disabled={currentCard === 0 || cards.length === 0}>←</button>
+
           <div className="card-indicator">
-            <span className="current-number"> {cards.length === 0? "00": String(currentCard + 1).padStart(2, "0")}</span>
+            <span className="current-number">{cards.length === 0 ? "00" : String(currentCard + 1).padStart(2, "0")}</span>
             <span className="indicator-line"></span>
-            <span>  {String(cards.length).padStart(2, "0")} </span>
+            <span>{String(cards.length).padStart(2, "0")}</span>
           </div>
-          <button onClick={nextCard} disabled={ cards.length === 0 || currentCard === cards.length - 1 }> → </button>
+
+          <button onClick={nextCard} disabled={cards.length === 0 || currentCard === cards.length - 1}>→</button>
         </div>
 
         <section className="input-area">
           <span className="input-number">+</span>
 
-          <input type="text" value={prompt} onChange={(e) => {
+          <input type="text" value={prompt} placeholder="Write a question..." onChange={(e) => {
               setPrompt(e.target.value);
-              if (error) {
-                setError(null);
-              }
-            }} placeholder="Write a question..." onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                askAI();
-              }
+              if (error) setError(null);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") askAI();
             }}
           />
-          <button onClick={askAI}  disabled={loading || !prompt.trim()}>
-            {loading ? "..." : "ADD"}
-          </button>
+
+          <button onClick={askAI} disabled={loading || !prompt.trim()}>  {loading ? "..." : "ADD"}</button>
         </section>
       </main>
 
