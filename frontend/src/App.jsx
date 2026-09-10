@@ -1,49 +1,49 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
+import AIErrorHandler from "./components/AIErrorHandler";
 import "./App.css";
 
 const App = () => {
   const [prompt, setPrompt] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const [cards, setCards] = useState([]);
-  const [currentCard, setCurrentCard] = useState(0);
+  const [cards, setCards] = useState(() => {
+    const savedCards = localStorage.getItem("cards");
+    return savedCards ? JSON.parse(savedCards) : [];
+  });
+
+  const [currentCard, setCurrentCard] = useState(() => {
+    const savedCards = localStorage.getItem("cards");
+
+    if (savedCards) {
+      const parsedCards = JSON.parse(savedCards);
+      return parsedCards.length > 0 ? parsedCards.length - 1 : 0;
+    }
+
+    return 0;
+  });
 
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem("theme") !== "light";
   });
 
+  // save theme
   useEffect(() => {
     localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
-  useEffect(() => {
-    const getCards = async () => {
-      try {
-        const response = await axios.get(
-          "https://genai-chat-e5c2.onrender.com/api/cards"
-        );
-
-        setCards(response.data);
-
-        if (response.data.length > 0) {
-          setCurrentCard(response.data.length - 1);
-        }
-      } catch (error) {
-        console.error("Failed to load cards", error);
-      }
-    };
-
-    getCards();
-  }, []);
+  // save cards
+  useEffect(() => {localStorage.setItem("cards", JSON.stringify(cards)); }, [cards]);
 
   const askAI = async () => {
     if (!prompt.trim()) return;
 
     try {
       setLoading(true);
+      setError(null);
       setAnswer("");
 
       const question = prompt;
@@ -61,13 +61,8 @@ const App = () => {
         date: new Date().toLocaleDateString("en-GB"),
       };
 
-      const savedCard = await axios.post(
-        "https://genai-chat-e5c2.onrender.com/api/cards",
-        newCard
-      );
-
       setCards((prevCards) => {
-        const updatedCards = [...prevCards, savedCard.data];
+        const updatedCards = [...prevCards, newCard];
         setCurrentCard(updatedCards.length - 1);
         return updatedCards;
       });
@@ -75,7 +70,8 @@ const App = () => {
       setAnswer(response.data.answer);
       setPrompt("");
     } catch (error) {
-      console.error(error);
+      console.error("AI ERROR:", error);
+      setError(error);
     } finally {
       setLoading(false);
     }
@@ -99,6 +95,7 @@ const App = () => {
     <div className={`app ${darkMode ? "dark" : "light"}`}>
       <header className="header">
         <div className="header-right">
+
           <div className="header-date">
             {new Date().toLocaleDateString("en-GB", {
               day: "2-digit",
@@ -107,7 +104,7 @@ const App = () => {
             })}
           </div>
 
-          <button className="theme-toggle"  onClick={() => setDarkMode(!darkMode)} aria-label="Toggle theme" >
+          <button className="theme-toggle" onClick={() => setDarkMode(!darkMode)} aria-label="Toggle theme">
             {darkMode ? "LIGHT" : "DARK"}
           </button>
         </div>
@@ -117,9 +114,10 @@ const App = () => {
         <div className="deck-heading">
           <div>
             <span className="section-label">QUESTION ARCHIVE</span>
-
             <p className="deck-count">
-              {cards.length === 0 ? "NO ENTRIES" : `${cards.length} ${cards.length === 1 ? "ENTRY" : "ENTRIES"  }`}
+              {cards.length === 0? "NO ENTRIES": `${cards.length} ${
+                  cards.length === 1 ? "ENTRY" : "ENTRIES"
+                }`}
             </p>
           </div>
           <span className="archive-mark">Q / A</span>
@@ -127,8 +125,8 @@ const App = () => {
 
         <section className="deck-area">
           <div className="card-stack">
-            <div className="card back-card back-card-one"></div>
-            <div className="card back-card back-card-two"></div>
+            {/* <div className="card back-card back-card-one"></div>
+            <div className="card back-card back-card-two"></div> */}
 
             <div className="card main-card">
               <div className="card-header">
@@ -139,83 +137,81 @@ const App = () => {
               </div>
 
               <div className="card-content">
-                {!activeCard && !loading && (
+                {error && !loading && (
+                  <AIErrorHandler
+                    error={error}
+                    onRetry={askAI}
+                    canRetry={prompt.trim().length > 0}
+                  />
+                )}
+
+                {!error && !activeCard && !loading && (
                   <div className="empty-card">
                     <span className="empty-number">001</span>
-                    <h2> Start with <br /> a question. </h2>
-                    <p> Your answers will collect here,  one entry at a time. </p>
+                    <h2>  Start with <br /> a question. </h2>
+                    <p>   Your answers will collect here, one entry at a time. </p>
                   </div>
                 )}
 
-                {loading && (
+                {!error && loading && (
                   <div className="empty-card">
-                    <span className="empty-number loading-symbol">
-                      ...
-                    </span>
-
+                    <span className="empty-number loading-symbol"> ...</span>
                     <h2>Looking into it.</h2>
-
                     <p>Your new entry is being prepared.</p>
                   </div>
                 )}
 
-                {!loading && activeCard && (
+                {!error && !loading && activeCard && (
                   <div className="entry">
                     <span className="entry-label">QUESTION</span>
-                    <h2 className="question">  {activeCard.prompt}</h2>
-                    <div className="answer">  <ReactMarkdown> {activeCard.answer}  </ReactMarkdown>  </div>
+                    <h2 className="question"> {activeCard.prompt}</h2>
+                    <div className="answer">
+                      <ReactMarkdown> {activeCard.answer} </ReactMarkdown>
+                    </div>
                   </div>
                 )}
+
               </div>
 
               <div className="card-footer">
-                <span> {activeCard ? "INDEX / Q&A"  : "INDEX / EMPTY"} </span>
-
-                <span>
-                  {activeCard ? String(currentCard + 1).padStart(3, "0")  : "001"}
-                </span>
+                <span> {activeCard ? "INDEX / Q&A" : "INDEX / EMPTY"} </span>
+                <span> {activeCard ? String(currentCard + 1).padStart(3, "0"): "001"} </span>
               </div>
             </div>
           </div>
         </section>
 
         <div className="navigation">
-          <button onClick={previousCard}  disabled={currentCard === 0 || cards.length === 0}> ←</button>
-
+          <button onClick={previousCard} disabled={currentCard === 0 || cards.length === 0}> ←</button>
           <div className="card-indicator">
-            <span className="current-number">
-              {cards.length === 0? "00" : String(currentCard + 1).padStart(2, "0")}
-            </span>
-
+            <span className="current-number"> {cards.length === 0? "00": String(currentCard + 1).padStart(2, "0")}</span>
             <span className="indicator-line"></span>
-
-            <span>
-              {String(cards.length).padStart(2, "0")}
-            </span>
+            <span>  {String(cards.length).padStart(2, "0")} </span>
           </div>
-
-          <button onClick={nextCard} disabled={cards.length === 0 ||currentCard === cards.length - 1}> →</button>
+          <button onClick={nextCard} disabled={ cards.length === 0 || currentCard === cards.length - 1 }> → </button>
         </div>
 
         <section className="input-area">
           <span className="input-number">+</span>
 
-          <input type="text" value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Write a question..."
-            onKeyDown={(e) => {
+          <input type="text" value={prompt} onChange={(e) => {
+              setPrompt(e.target.value);
+              if (error) {
+                setError(null);
+              }
+            }} placeholder="Write a question..." onKeyDown={(e) => {
               if (e.key === "Enter") {
                 askAI();
               }
             }}
           />
-
-          <button onClick={askAI} disabled={loading || !prompt.trim()}>
+          <button onClick={askAI}  disabled={loading || !prompt.trim()}>
             {loading ? "..." : "ADD"}
           </button>
         </section>
       </main>
 
       <footer>
-        <span>INDEX</span>
         <span>QUESTIONS / ANSWERS</span>
         <span>{cards.length} ENTRIES</span>
       </footer>
