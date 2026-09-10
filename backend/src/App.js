@@ -2,7 +2,7 @@ const express = require("express");
 require('dotenv').config();
 const {GoogleGenAI} = require("@google/genai");
 const cors = require("cors");
-const cardRoutes = require("./routes/cards.route");
+// const cardRoutes = require("./routes/cards.route");
 
 const app = express();
 app.use(express.json());
@@ -32,5 +32,5 @@ app.post("/", async (req, res)=>{
     });
 }
 });
-app.use("/api/cards", cardRoutes);
+// app.use("/api/cards", cardRoutes);
 module.exports = app;
