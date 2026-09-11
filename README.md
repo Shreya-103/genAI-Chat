@@ -200,30 +200,6 @@ node server.js
 
 The Express server will start on the configured port.
 
-## API
-
-### Generate AI Answer
-
-```text
-POST /api/ai
-```
-
-Request:
-
-```json
-{
-  "prompt": "What is React?"
-}
-```
-
-Response:
-
-```json
-{
-  "answer": "React is a JavaScript library for building user interfaces..."
-}
-```
-
 ## Design
 
 The application intentionally avoids the traditional AI chatbot layout.
