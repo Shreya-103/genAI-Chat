@@ -171,19 +171,16 @@ const App = () => {
 
         <div className="navigation">
           <button onClick={previousCard} disabled={currentCard === 0 || cards.length === 0}>←</button>
-
           <div className="card-indicator">
             <span className="current-number">{cards.length === 0 ? "00" : String(currentCard + 1).padStart(2, "0")}</span>
             <span className="indicator-line"></span>
             <span>{String(cards.length).padStart(2, "0")}</span>
           </div>
-
           <button onClick={nextCard} disabled={cards.length === 0 || currentCard === cards.length - 1}>→</button>
         </div>
 
         <section className="input-area">
           <span className="input-number">+</span>
-
           <input type="text" value={prompt} placeholder="Write a question..." onChange={(e) => {
               setPrompt(e.target.value);
               if (error) setError(null);
@@ -192,7 +189,6 @@ const App = () => {
               if (e.key === "Enter") askAI();
             }}
           />
-
           <button onClick={askAI} disabled={loading || !prompt.trim()}>  {loading ? "..." : "ADD"}</button>
         </section>
       </main>
